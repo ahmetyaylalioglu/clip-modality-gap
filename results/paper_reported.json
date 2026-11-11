@@ -1,0 +1,55 @@
+{
+  "_note": "Numbers reported by the papers, NOT measured by us. Transcribed from the arXiv HTML versions on 2026-11-11; each entry gives the exact source. Re-check against the PDF before citing.",
+  "mind_the_gap_table1": {
+    "paper": "Liang et al., Mind the Gap, NeurIPS 2022, arXiv:2203.02053",
+    "source": "Table 1 (Section 5.1). Values are the max over the shift grid on the test set (see official code shift_features.ipynb, plot_metrics).",
+    "model": "CLIP ViT-B/16",
+    "metric": "top-1 accuracy (HatefulMemes: ROC-AUC)",
+    "rows": [
+      {"dataset": "CIFAR10", "original": 0.9013, "modified": 0.9081, "direction": "up"},
+      {"dataset": "CIFAR100", "original": 0.6658, "modified": 0.6737, "direction": "down"},
+      {"dataset": "EuroSAT", "original": 0.5410, "modified": 0.5645, "direction": "down"},
+      {"dataset": "SVHN", "original": 0.5389, "modified": 0.5396, "direction": "up"},
+      {"dataset": "HatefulMemes", "original": 0.5800, "modified": 0.5811, "direction": "up"}
+    ],
+    "shift_amount_used": null,
+    "shift_amount_note": "Not reported in the paper."
+  },
+  "mind_the_gap_table2_gap": {
+    "source": "Section 5.2 / Table 2 text",
+    "model": "CLIP ViT-B/32",
+    "gap_original": 0.82,
+    "gap_modified": 0.97
+  },
+  "i0t_table2": {
+    "paper": "An et al., I0T, ACL 2025, arXiv:2412.14384",
+    "source": "Table 2; protocol in Appendix D.2",
+    "dataset": "Flickr30k Karpathy 1k, first caption per image only",
+    "model": "CLIP ViT-B/32",
+    "metric": "R@1",
+    "rows": [
+      {"method": "CLIP", "i2t_R@1": 69.60, "t2i_R@1": 67.10},
+      {"method": "I0T_post", "i2t_R@1": 73.30, "t2i_R@1": 76.30}
+    ],
+    "statistics_source_note": "Limitations: method 'relies on the entire test dataset' -> likely test statistics; not stated explicitly."
+  },
+  "liu2026_table4": {
+    "paper": "Liu et al. 2026, The Geometry of Compromise, arXiv:2604.00279 (preprint, not peer reviewed)",
+    "source": "Table 4 (also Table 1)",
+    "dataset": "COCO 5K test",
+    "model": null,
+    "model_note": "Not named in the retrieval tables; implementation section uses ViT-B/32.",
+    "metric": "R@1",
+    "rows": [
+      {"method": "Original CLIP", "i2t_R@1": 53.42, "t2i_R@1": 35.36},
+      {"method": "Mean-Centering", "i2t_R@1": 43.74, "t2i_R@1": 34.44}
+    ]
+  },
+  "sato2026_appD3": {
+    "paper": "Sato et al. 2026, When Modality Gap Reduction Fails, arXiv:2609.01103 (EMNLP 2026)",
+    "source": "Appendix D.3 text",
+    "finding": "Centering at alpha=0 changes zero-shot accuracy from -4.2 pt (Flowers102) to +4.1 pt (EuroSAT) with dataset-specific templates.",
+    "per_dataset_signed_change": null,
+    "per_dataset_note": "Only the extremes are given in the text."
+  }
+}

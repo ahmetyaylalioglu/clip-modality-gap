@@ -19,7 +19,8 @@ Representation Learning.* NeurIPS 2022.
 
 ## Planned scope
 
-1. **Reproduction:** measure the modality gap in CLIP ViT-B/32 and reproduce
+1. **Reproduction:** measure the modality gap in CLIP ViT-B/16 (the model used in the
+   paper's Table 1) and reproduce
    the embedding-shift experiment on zero-shot classification.
 2. **Improvement:** training-free gap correction (modality-wise centering
    and re-normalization), with statistics estimated on train/val data only.
@@ -36,7 +37,6 @@ Representation Learning.* NeurIPS 2022.
 | `src/` | Implementation |
 | `results/` | Saved outputs |
 | `REPRODUCE.md` | Environment, versions, seeds, exact commands |
-| `AI_USE.md` | AI-assistance disclosure |
 
 ## Setup
 

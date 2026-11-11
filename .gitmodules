@@ -1,0 +1,3 @@
+[submodule "third_party/Modality-Gap"]
+	path = third_party/Modality-Gap
+	url = https://github.com/Weixin-Liang/Modality-Gap
