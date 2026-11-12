@@ -1,0 +1,7 @@
+{
+  "git_commit": "91cc3faaa83be1a326e86d7e60b3f42d4a276214",
+  "torch": "1.12.0+cu113",
+  "coco_val2017_pairs": 5000,
+  "coco_val2017_gap": 0.8262465000152588,
+  "env": "env-orig"
+}

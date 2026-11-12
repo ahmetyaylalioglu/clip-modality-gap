@@ -54,3 +54,48 @@ def zero_shot_accuracy(img: np.ndarray, cls_txt: np.ndarray, labels: np.ndarray,
     preds = (img @ cls_txt.T).argmax(axis=1)
     acc = float((preds == labels).mean())
     return (acc, preds) if return_preds else acc
+
+
+# ---------------------------------------------------------------- bootstrap
+N_BOOT = 1000
+
+
+def bootstrap_ci(hits: np.ndarray, n_boot: int = N_BOOT, seed: int = 0, alpha: float = 0.05):
+    """Percentile CI of the mean of a per-query 0/1 (or real) array."""
+    rng = np.random.default_rng(seed)
+    n = len(hits)
+    idx = rng.integers(0, n, size=(n_boot, n))
+    means = hits[idx].mean(1)
+    lo, hi = np.quantile(means, [alpha / 2, 1 - alpha / 2])
+    return float(hits.mean()), float(lo), float(hi)
+
+
+def paired_bootstrap_diff(hits_a: np.ndarray, hits_b: np.ndarray, n_boot: int = N_BOOT, seed: int = 0, alpha: float = 0.05):
+    """CI of mean(b) - mean(a), resampling the same queries for both."""
+    assert hits_a.shape == hits_b.shape
+    return bootstrap_ci(hits_b.astype(float) - hits_a.astype(float), n_boot, seed, alpha)
+
+
+# ------------------------------------------------------------------ hubness
+def gini(counts: np.ndarray) -> float:
+    """Standard Gini coefficient (Sato et al. 2026 §5.1 form):
+    G = 2*sum_r r*m_(r) / (C*sum m) - (C+1)/C, m sorted ascending, r=1..C."""
+    m = np.sort(np.asarray(counts, dtype=float))
+    c = len(m)
+    if m.sum() == 0:
+        return 0.0
+    r = np.arange(1, c + 1)
+    return float(2 * (r * m).sum() / (c * m.sum()) - (c + 1) / c)
+
+
+def occupancy(sim: np.ndarray, k: int) -> np.ndarray:
+    """How often each gallery item (column) appears in the top-k of a query (row)."""
+    topk = np.argpartition(-sim, kth=min(k, sim.shape[1] - 1), axis=1)[:, :k]
+    return np.bincount(topk.ravel(), minlength=sim.shape[1])
+
+
+def top_share(counts: np.ndarray, frac: float = 0.01) -> float:
+    """Share of top-k slots taken by the `frac` most-retrieved gallery items."""
+    m = np.sort(counts)[::-1]
+    n = max(1, int(round(len(m) * frac)))
+    return float(m[:n].sum() / m.sum())
