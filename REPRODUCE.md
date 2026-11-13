@@ -173,3 +173,16 @@ resource table; a separate clean benchmark is used instead.
 B2 sanity check (QuickGELU configs): δ=0 and test-selected max are identical
 to the original code for CIFAR10 (.9013/.9081 test direction, .9126 COCO
 direction), CIFAR100 (.6658/.6737), EuroSAT (.5494/.5685) and SVHN (.5389).
+
+M0 retrieval check against the open_clip / clip_benchmark reference table
+(`results/paper_reported.json` → `openclip_retrieval_results`), clip_b16,
+5 captions per image, R@1 / R@5 / R@10 (%):
+
+| | ours | open_clip table |
+|---|---|---|
+| Flickr30k I2T | 81.90 / 96.20 / 98.80 | 82.20 / 96.60 / 99.00 |
+| Flickr30k T2I | 62.00 / 85.56 / 91.78 | 62.16 / 85.72 / 91.92 |
+| COCO 5k I2T | 52.48 / 76.72 / 84.76 | 52.42 / 76.70 / 84.62 |
+| COCO 5k T2I | 33.08 / 58.34 / 68.98 | 33.09 / 58.42 / 68.99 |
+
+All differences are ≤ 0.4 pp (Flickr I2T: 1 query = 0.1 pp).
