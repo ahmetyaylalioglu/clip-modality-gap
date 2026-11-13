@@ -235,3 +235,21 @@ queries). Checked and ruled out: numerical precision (fp16 autocast, as used
 by clip_benchmark by default, gives the same 77.50; T2I 58.74 vs. 58.78).
 Our T2I on the same embeddings matches the table exactly (58.78). The cause
 is not known; the cell is reported as it is.
+
+**Zero-shot baselines vs. the open_clip classification table**
+(`docs/openclip_classification_results.csv`, main branch, read 2026-11-14;
+clip_benchmark templates). Our baselines use the original Mind-the-Gap
+prompts (§6), so they differ from that table; the largest gap is clip_b32
+SVHN (ours 25.92 %, table 31.59 %). Check on the cached image embeddings,
+re-encoding only the class prompts (diagnostic, no result file changed):
+
+| SVHN test top-1 (%) | clip_b32 | clip_b16 | siglip_b16 |
+|---|---|---|---|
+| our prompt `a street sign of the number: "{}".`, digits | 25.92 | 53.89 | 55.53 |
+| `a photo of the number: "{}".`, digits | 31.61 | 51.98 | 55.87 |
+| open_clip table | 31.59 | 51.90 | 55.86 |
+
+With the clip_benchmark-style prompt our pipeline reproduces the table to
+≤ 0.08 pp, so the low clip_b32 SVHN baseline comes from the prompt, not from
+the pipeline. It is kept, because all zero-shot experiments use the original
+code's prompts.
