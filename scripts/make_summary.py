@@ -381,9 +381,22 @@ def resources(models):
     f = ROOT / "results" / "resources" / "embedding_benchmark.csv"
     if f.exists():
         e = pd.read_csv(f)
-        w("Embedding extraction: source `results/resources/embedding_benchmark.csv`.")
+        w("Embedding extraction: source `results/resources/embedding_benchmark.csv` (`scripts/c8_embedding_benchmark.py`). "
+          "GPU encoding only, fp32, batch 256, Flickr30k test (1,000 images, 5,000 captions), images preprocessed "
+          "before timing, median of 3 repeats after a warm-up; each model started at ≤60 °C. "
+          "Cache wall-clock = full extraction of all 12 cached sets (147,560 images, 202,935 texts) including JPEG "
+          "decoding and preprocessing, with recorded thermal pauses (85 °C limit) subtracted where they were recorded.")
         w()
-        table(list(e.columns), e.values.tolist())
+        rows = []
+        for _, q in e.iterrows():
+            clean = q.get("cache_wall_minus_pause_min")
+            rows.append([q.model, f"{q.images_per_s:.0f}", f"{q.texts_per_s:.0f}", f"{q.peak_gpu_mem_mb:.0f}",
+                         f"{q.gpu_temp_before_c:.0f} → {q.gpu_temp_after_c:.0f}",
+                         f"{q.cache_total_wall_min:.1f}",
+                         "not recorded" if pd.isna(clean) else f"{q.cache_thermal_pause_min:.1f}",
+                         "—" if pd.isna(clean) else f"{clean:.1f}"])
+        table(["Model", "Images/s", "Texts/s", "Peak GPU memory (MB)", "GPU °C (start → end)",
+               "Cache wall-clock (min)", "Thermal pauses (min)", "Cache wall-clock − pauses (min)"], rows)
     else:
         w("Embedding extraction benchmark: not yet run.")
         w()

@@ -207,3 +207,31 @@ for clip_b16 is CIFAR10 / `calib_train`: δ = −2.25 and −2.00 tie on
 validation (0.9084); B2b reports δ = −2.25 (test 0.9069), the M3 row of
 `zero_shot_clip_b16.csv` uses δ = −2.00 (test 0.9070). B2b was run first and
 is left unchanged.
+
+## 9. ViT-B/32 and SigLIP runs (2026-11-13/14)
+
+Caches built with `EMBED_MAX_TEMP=85` (thermal pauses are now recorded in
+each `*_meta.json` as `resources.thermal_pause_s`), then
+`bash scripts/make_all_tables.sh clip_b32 siglip_b16` (15 min 51 s for both
+models, CPU) and `python scripts/c8_embedding_benchmark.py` (GPU).
+
+| Model | Cache wall-clock, 12 sets | of which thermal pauses | Peak GPU memory |
+|---|---|---|---|
+| clip_b32 | 36.5 min | 11.1 min | 1.3 GB |
+| siglip_b16 | 84.4 min | 38.1 min | 2.7 GB |
+| clip_b16 (2026-11-12, earlier run) | 178.7 min | not recorded (heavy throttling) | 3.1 GB |
+
+**Clean resource numbers** come from `scripts/c8_embedding_benchmark.py`
+(`results/resources/embedding_benchmark.csv`): GPU encoding only, fixed
+1,000 images / 5,000 captions, every model started at ≤ 60 °C. A first run
+without the cool-down started SigLIP at 86 °C and measured it 2.5× slower
+(89 vs. 224 images/s); that run was discarded and the script now waits for
+the GPU to cool before each model.
+
+**M0 check for clip_b32 and siglip_b16** (5 captions, R@1, §1.4 of
+SUMMARY.md): 7 of 8 values are within 0.05 pp of the open_clip table. The
+exception is clip_b32 Flickr30k I2T: 77.50 vs. 78.90 (−1.4 pp, 14 of 1,000
+queries). Checked and ruled out: numerical precision (fp16 autocast, as used
+by clip_benchmark by default, gives the same 77.50; T2I 58.74 vs. 58.78).
+Our T2I on the same embeddings matches the table exactly (58.78). The cause
+is not known; the cell is reported as it is.

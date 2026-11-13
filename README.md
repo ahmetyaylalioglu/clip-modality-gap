@@ -99,9 +99,10 @@ Data, embedding caches and environments are not in the repository.
 | Step | Command | Needs | Time (dev. laptop) |
 |---|---|---|---|
 | Smoke test (3 models, 32 pairs) | `python scripts/smoke_test.py` | GPU, weights download | ~1 min |
-| Embedding caches | `python -m src.embed --model clip_b16` (also `clip_b32`, `siglip_b16`) | GPU, ~3.1 GB VRAM, ~0.7–1 GB disk per model | ~3 h per model on the laptop (thermal throttling; see REPRODUCE.md §8) |
+| Embedding caches | `python -m src.embed --model clip_b16` (also `clip_b32`, `siglip_b16`) | GPU, 1.3–3.1 GB VRAM, ~0.7–1 GB disk per model | 25–46 min per model without thermal pauses on the laptop (REPRODUCE.md §8–9) |
 | Original Table 1 code | `env-orig/Scripts/python scripts/run_original_table1.py` | GPU, `env-orig` | not timed |
-| All tables and figures from caches | `bash scripts/make_all_tables.sh` | CPU (latency step uses the GPU briefly if present) | ~8 min per model (clip_b16, measured) |
+| All tables and figures from caches | `bash scripts/make_all_tables.sh` | CPU (latency step uses the GPU briefly if present) | ~8 min per model (measured) |
+| Embedding resource benchmark | `python scripts/c8_embedding_benchmark.py` | GPU | ~3 min plus cool-down |
 
 `make_all_tables.sh` skips models whose cache is incomplete; `EMBED=1`
 builds missing caches first, `ORIGINAL=1` also re-runs the original code.
@@ -117,6 +118,7 @@ Individual scripts (all take `--model`):
 | `c4_failure_cases.py` | 20 most improved / worsened queries |
 | `c5_figures.py` | figures for Phase C |
 | `c6_latency.py` | per-query correction latency (CPU/GPU) |
+| `c8_embedding_benchmark.py` | peak GPU memory and throughput of embedding extraction (GPU; not part of `make_all_tables.sh`) |
 | `c7_literature_comparison.py` | our M0/M1/M1-T/M4 in the I0T and Liu settings, next to their reported numbers (runs once for all models) |
 | `make_summary.py`, `dump_config.py` | `results/SUMMARY.md`, `configs/resolved_config.yaml` |
 

@@ -70,6 +70,9 @@ def _gpu_temp():
         return None
 
 
+_PAUSED = {"s": 0.0}  # total time spent in thermal pauses (subtracted for the clean timing)
+
+
 def _thermal_wait():
     """If EMBED_MAX_TEMP is set and the GPU is at/above it, pause until it is
     3 C below. Only affects wall-clock time, not the embeddings."""
@@ -79,9 +82,11 @@ def _thermal_wait():
     t = _gpu_temp()
     if t is None or t < int(limit):
         return
+    t0 = time.perf_counter()
     while t is not None and t > int(limit) - 3:
         time.sleep(5)
         t = _gpu_temp()
+    _PAUSED["s"] += time.perf_counter() - t0
 
 
 class Encoder:
@@ -246,6 +251,7 @@ def main():
         torch.cuda.reset_peak_memory_stats()
         torch.cuda.synchronize()
         t0 = time.perf_counter()
+        _PAUSED["s"] = 0.0
         if name == "coco_val2017":
             fn = embed_coco_val2017
         elif name in RETRIEVAL_SETS:
@@ -260,6 +266,8 @@ def main():
             "n_images": int(img.shape[0]), "n_texts": int(txt.shape[0]),
             "batch_size": enc.bs, "gpu": torch.cuda.get_device_name(0),
             "embed_sleep_s_per_batch": float(os.environ.get("EMBED_SLEEP", "0")),
+            "thermal_pause_s": _PAUSED["s"],
+            "max_temp_setting_c": os.environ.get("EMBED_MAX_TEMP"),
         }
         meta["model"] = {"key": args.model, "arch_tag": models.MODELS[args.model]}
         _save(dirp, name, img, txt, meta)
