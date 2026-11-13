@@ -84,8 +84,8 @@ Weights are fetched from the HuggingFace Hub by open_clip.
 
 | Key | open_clip arch / tag | HF weight repo | Snapshot revision |
 |---|---|---|---|
-| `clip_b16` | `ViT-B-16` / `openai` | `timm/vit_base_patch16_clip_224.openai` | `a6f597a30f7b82c51704746581f9a4e41421e878` |
-| `clip_b32` | `ViT-B-32` / `openai` | `timm/vit_base_patch32_clip_224.openai` | `41f575766f40e752fdd1383e9565b7f02388c1c4` |
+| `clip_b16` | `ViT-B-16-quickgelu` / `openai` | `timm/vit_base_patch16_clip_224.openai` | `a6f597a30f7b82c51704746581f9a4e41421e878` |
+| `clip_b32` | `ViT-B-32-quickgelu` / `openai` | `timm/vit_base_patch32_clip_224.openai` | `41f575766f40e752fdd1383e9565b7f02388c1c4` |
 | `siglip_b16` | `ViT-B-16-SigLIP` / `webli` | `timm/ViT-B-16-SigLIP` | `977e3dd0ec55ab8da155f2fbeb6b5f54948b6e3d` |
 
 `clip_b16` is the model used in the paper's Table 1 (the original code calls
@@ -151,6 +151,10 @@ SigLIP is unaffected and gives identical numbers.)
 
 ## 8. Phase B/C commands (clip_b16)
 
+All steps below (for every model with a complete cache) plus
+`results/SUMMARY.md` and `configs/resolved_config.yaml`:
+`bash scripts/make_all_tables.sh`.
+
 ```bash
 python -m src.embed --model clip_b16                  # all caches (GPU)
 python scripts/b2_shift_zero_shot.py --model clip_b16 # B2 / B2b (CPU, ~5 min)
@@ -190,3 +194,13 @@ M0 retrieval check against the open_clip / clip_benchmark reference table
 | COCO 5k T2I | 33.08 / 58.34 / 68.98 | 33.09 / 58.42 / 68.99 |
 
 All differences are ≤ 0.4 pp (Flickr I2T: 1 query = 0.1 pp).
+
+**Tie-breaking of validation-selected parameters.** When several grid values
+reach the same validation score, `scripts/b2_shift_zero_shot.py` (B2b) takes
+the first one in grid order (`np.argmax`), while `c1_retrieval.py` and
+`c2_zero_shot.py` take the one with the smallest |value| (closest to no
+change). Neither rule looks at test data. The only case where this matters
+for clip_b16 is CIFAR10 / `calib_train`: δ = −2.25 and −2.00 tie on
+validation (0.9084); B2b reports δ = −2.25 (test 0.9069), the M3 row of
+`zero_shot_clip_b16.csv` uses δ = −2.00 (test 0.9070). B2b was run first and
+is left unchanged.
