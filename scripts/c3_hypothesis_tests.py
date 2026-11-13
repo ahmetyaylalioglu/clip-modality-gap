@@ -10,6 +10,7 @@ on validation). Paired bootstrap over test queries, 1,000 resamples.
 Usage:  python scripts/c3_hypothesis_tests.py --model clip_b16
 Output: results/improvement/hypothesis_tests_<model>.csv
         results/improvement/hubness_spearman_<model>.csv
+        results/improvement/hubness_spearman_noC1_<model>.csv (post-hoc, without C1)
 """
 import argparse
 import subprocess
@@ -38,8 +39,16 @@ def hits(img, txt, owner):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--model", default="clip_b16")
+    p.add_argument("--spearman-only", action="store_true", help="skip the paired tests (reuse their CSV)")
     args = p.parse_args()
     m = args.model
+    commit = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    if not args.spearman_only:
+        paired_tests(m, commit)
+    spearman_all(m, commit)
+
+
+def paired_tests(m, commit):
     res = pd.read_csv(OUT / f"retrieval_{m}.csv")
     trains = {ds: train_split(m, ds) for ds in ["flickr30k", "mscoco"]}
     rows = []
@@ -67,18 +76,33 @@ def main():
                                      "significant": bool(lo > 0 or hi < 0)})
             print(f"[{ds}/{proto}] done", flush=True)
 
-    commit = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
     df = pd.DataFrame(rows)
     df["git_commit"] = commit
     df.to_csv(OUT / f"hypothesis_tests_{m}.csv", index=False)
     print(df.groupby(["hypothesis", "comparison", "dataset", "protocol", "direction"])
           [["dR@1", "dR@1_lo", "dR@1_hi"]].mean().mul(100).round(2).to_string())
 
-    # H4: Spearman of dGini@k vs dR@1 across methods and calibration settings (no M0 rows)
+
+def spearman_all(m, commit):
+    # H4 (pre-registered): all methods and calibration settings except M0.
+    # Post-hoc sensitivity: the same without the C1 random-shift control rows,
+    # which have the largest |dGini| and |dR@1| and can dominate the rank correlation.
+    for tag, excl, fname in [("all non-M0 rows (pre-registered)", ["M0"], f"hubness_spearman_{m}.csv"),
+                             ("without C1 (post-hoc sensitivity)", ["M0", "C1"], f"hubness_spearman_noC1_{m}.csv")]:
+        sdf = spearman_table(m, excl)
+        sdf["rows"] = tag
+        sdf["git_commit"] = commit
+        sdf.to_csv(OUT / fname, index=False)
+        print(tag)
+        print(sdf.drop(columns=["git_commit", "rows"]).round(3).to_string(index=False))
+
+
+def spearman_table(m, exclude):
+    """Spearman of dGini@k vs dR@1 across methods and calibration settings."""
     hub = pd.read_csv(OUT / f"retrieval_hubness_{m}.csv")
     base = hub[hub.method == "M0"].set_index(["dataset", "protocol", "direction"])
     sp = []
-    for (ds, proto, d), g in hub[hub.method != "M0"].groupby(["dataset", "protocol", "direction"]):
+    for (ds, proto, d), g in hub[~hub.method.isin(exclude)].groupby(["dataset", "protocol", "direction"]):
         for k in (1, 5, 10):
             dg = (g[f"gini@{k}"] - base.loc[(ds, proto, d), f"gini@{k}"]).to_numpy()
             dr = g["dR@1"].to_numpy()
@@ -92,10 +116,7 @@ def main():
             lo, hi = np.quantile(bs, [0.025, 0.975])
             sp.append({"model": m, "dataset": ds, "protocol": proto, "direction": d, "k": k, "n": len(dg),
                        "spearman": float(rho), "ci_lo": float(lo), "ci_hi": float(hi)})
-    sdf = pd.DataFrame(sp)
-    sdf["git_commit"] = commit
-    sdf.to_csv(OUT / f"hubness_spearman_{m}.csv", index=False)
-    print(sdf.round(3).to_string(index=False))
+    return pd.DataFrame(sp)
 
 
 if __name__ == "__main__":

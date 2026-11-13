@@ -156,6 +156,8 @@ python scripts/c2_zero_shot.py --model clip_b16       # Phase C zero-shot (CPU, 
 python scripts/c3_hypothesis_tests.py --model clip_b16  # paired tests for H3/H6, H4 Spearman
 python scripts/b3_gap_plot.py --model clip_b16        # B3 PCA/UMAP figure + gap stats (CPU, ~30 s)
 python scripts/c4_failure_cases.py --model clip_b16   # 20 most improved / worsened queries (CPU, ~10 s)
+python scripts/c5_figures.py --model clip_b16         # Phase C figures (CPU, ~20 s)
+# python scripts/c3_hypothesis_tests.py --model clip_b16 --spearman-only   # only the H4 Spearman tables
 ```
 
 **Thermal throttling on the development laptop.** Under sustained load the
