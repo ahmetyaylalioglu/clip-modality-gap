@@ -101,7 +101,7 @@ Data, embedding caches and environments are not in the repository.
 | Smoke test (3 models, 32 pairs) | `python scripts/smoke_test.py` | GPU, weights download | ~1 min |
 | Embedding caches | `python -m src.embed --model clip_b16` (also `clip_b32`, `siglip_b16`) | GPU, ~3.1 GB VRAM, ~0.7–1 GB disk per model | ~3 h per model on the laptop (thermal throttling; see REPRODUCE.md §8) |
 | Original Table 1 code | `env-orig/Scripts/python scripts/run_original_table1.py` | GPU, `env-orig` | not timed |
-| All tables and figures from caches | `bash scripts/make_all_tables.sh` | CPU (latency step uses the GPU briefly if present) | ~30 min per model |
+| All tables and figures from caches | `bash scripts/make_all_tables.sh` | CPU (latency step uses the GPU briefly if present) | ~8 min per model (clip_b16, measured) |
 
 `make_all_tables.sh` skips models whose cache is incomplete; `EMBED=1`
 builds missing caches first, `ORIGINAL=1` also re-runs the original code.
