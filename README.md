@@ -38,9 +38,9 @@ None of them is our invention:
 |----|--------|--------|
 | M0 | raw embeddings | — |
 | M1 | subtract each modality's mean (train split), re-normalize | I0T_post (An et al., ACL 2025); GR-CLIP (Li et al., NeurIPS 2025) |
-| M2 | subtract means, no re-normalization (ablation) | GR-CLIP form |
+| M2 | subtract means, no re-normalization, dot-product score | re-normalization ablation (GR-CLIP subtracts means but scores with cosine, i.e. M1) |
 | M3 | Mind-the-Gap shift, δ chosen on validation | Liang et al. 2022 |
-| M4 | norm(x − α·μ), α chosen on validation per retrieval direction | combination of M1 with a grid-selected scale (as in M3 and Sato et al. 2026) |
+| M4 | norm(x − α·μ), α chosen on validation per retrieval direction | combination of M1 with a grid-selected strength (like δ of M3 and the shift strength α of Sato et al. 2026) |
 | C1 | shift by a random vector with the gap's norm (control) | — |
 | M1-T | M1 with test-set means — **diagnostic only** | condition of I0T |
 

@@ -3,7 +3,7 @@
 Methods (see results/improvement/HYPOTHESES.md; none of them is ours):
   M0    raw L2-normalized embeddings
   M1    norm(x - mu_x), mu from calibration pairs        (I0T_post form)
-  M2    x - mu_x, no re-normalization, dot-product score (GR-CLIP form)
+  M2    x - mu_x, no re-normalization, dot-product score (re-normalization ablation)
   M3    Mind-the-Gap shift, direction from calibration pairs,
         delta chosen on validation, separately for I2T and T2I
   M4    norm(x - alpha*mu_x), alpha in {0,0.1,..,1} chosen on validation,

@@ -1,13 +1,18 @@
 """Literature comparison: our M0/M1 retrieval numbers in the settings of
-I0T (An et al. 2025, Table 2) and Liu et al. 2026 (Table 4).
+I0T (An et al. 2025, Tables 2 and 9) and Liu et al. 2026 (Table 4).
 
 Only our numbers are written to the CSV; the reported numbers stay in
 results/paper_reported.json and are referenced by key (column
 `reported_entry`). The figure shows both, with the reported values marked
 as such. Nothing is tuned to match the papers.
 
-  I0T setting:  Flickr30k 1k test, first caption per image   (paper: CLIP ViT-B/32)
-  Liu setting:  COCO 5k test, 5 captions per image            (paper: backbone not named in the table)
+  I0T protocol: Flickr30k 1k, first caption per image. I0T evaluates on the
+                Karpathy *validation* split with means from those samples; we
+                evaluate on the test split. Reported references:
+                  Table 2  I0T_post on fine-tuned ViT-B/32 encoders (LCCOM) vs.
+                           the original CLIP -> fine-tuning and centering combined
+                  Table 9  centering on the original, frozen CLIP RN50
+  Liu setting:  COCO 5k test, 5 captions per image (backbone not named in the table)
 
 Methods shown: M0, M1 (10k in-domain train pairs, mean over 3 seeds),
 M1-T (test statistics, diagnostic -- the likely I0T condition), M4.
@@ -32,10 +37,16 @@ FIG = ROOT / "results" / "figures"
 MODELS = ["clip_b16", "clip_b32", "siglip_b16"]
 SHORT = {"clip_b16": "CLIP B/16", "clip_b32": "CLIP B/32", "siglip_b16": "SigLIP B/16"}
 MAIN_N = 10000
-# setting -> (dataset, protocol, key in paper_reported.json, baseline row, corrected row, label)
+# setting -> (dataset, protocol, panel title)
 SETTINGS = {
-    "I0T": ("flickr30k", "first", "i0t_table2", "CLIP", "I0T_post", "Flickr30k 1k, first caption (I0T setting)"),
-    "Liu": ("mscoco", "5cap", "liu2026_table4", "Original CLIP", "Mean-Centering", "COCO 5k, 5 captions (Liu setting)"),
+    "I0T": ("flickr30k", "first", "Flickr30k, first caption (I0T)"),
+    "Liu": ("mscoco", "5cap", "COCO 5k, 5 captions (Liu)"),
+}
+# setting -> reported references: (key in paper_reported.json, baseline row, corrected row, label)
+REPORTED = {
+    "I0T": [("i0t_table2", "CLIP", "I0T_post", "I0T Tab. 2: fine-tuned B/32 + centering"),
+            ("i0t_table9", "CLIP", "CLIP_post", "I0T Tab. 9: frozen CLIP RN50")],
+    "Liu": [("liu2026_table4", "Original CLIP", "Mean-Centering", "Liu Tab. 4: backbone not named")],
 }
 DIRS = [("i2t", "Image→Text"), ("t2i", "Text→Image")]
 METHODS = ["M0", "M1", "M1-T", "M4"]
@@ -51,7 +62,8 @@ def ours(models):
     rows = []
     for m in models:
         r = pd.read_csv(RES / f"retrieval_{m}.csv")
-        for setting, (ds, proto, key, *_rest) in SETTINGS.items():
+        for setting, (ds, proto, _t) in SETTINGS.items():
+            key = ";".join(k for k, *_ in REPORTED[setting])
             for d, _ in DIRS:
                 g = r[(r.dataset == ds) & (r.protocol == proto) & (r.direction == d)]
                 for meth in METHODS:
@@ -78,24 +90,26 @@ def ours(models):
 def reported():
     paper = json.loads((ROOT / "results" / "paper_reported.json").read_text(encoding="utf-8"))
     out = {}
-    for setting, (_ds, _p, key, base, corr, _t) in SETTINGS.items():
-        rows = {r["method"]: r for r in paper[key]["rows"]}
-        out[setting] = {"model": paper[key]["model"] or "backbone not named",
-                        **{d: (rows[base][f"{d}_R@1"], rows[corr][f"{d}_R@1"]) for d, _ in DIRS}}
+    for setting, refs in REPORTED.items():
+        out[setting] = []
+        for key, base, corr, label in refs:
+            rows = {r["method"]: r for r in paper[key]["rows"]}
+            out[setting].append({"label": label, **{d: (rows[base][f"{d}_R@1"], rows[corr][f"{d}_R@1"]) for d, _ in DIRS}})
     return out
 
 
 def figure(df, rep):
     models = [m for m in MODELS if m in set(df.model)]
-    fig, axes = plt.subplots(2, 2, figsize=(9.5, 1.2 + 0.55 * (1 + 3 * len(models)) * 2), sharex=True)
+    fig, axes = plt.subplots(2, 2, figsize=(11, 1.2 + 0.55 * (2 + 3 * len(models)) * 2), sharex=True)
     for r, (setting, (*_x, title)) in enumerate(SETTINGS.items()):
         for c, (d, dname) in enumerate(DIRS):
             ax = axes[r, c]
             labels, y = [], 0
-            base, corr = rep[setting][d]
-            ax.plot(corr - base, y, marker="s", ms=7, mfc="white", mec=REPORTED_COLOR, mew=1.6, ls="none")
-            labels.append(f"Reported ({setting}, {rep[setting]['model']})")
-            y += 1
+            for ref in rep[setting]:
+                base, corr = ref[d]
+                ax.plot(corr - base, y, marker="s", ms=7, mfc="white", mec=REPORTED_COLOR, mew=1.6, ls="none")
+                labels.append(f"Reported — {ref['label']}")
+                y += 1
             for m in models:
                 for meth in ["M1", "M1-T", "M4"]:
                     q = df[(df.model == m) & (df.setting == setting) & (df.direction == d) & (df.method == meth)]
@@ -114,7 +128,8 @@ def figure(df, rep):
             ax.set_title(f"{title} — {dname}", fontsize=9)
             if r == 1:
                 ax.set_xlabel("ΔRecall@1 vs. raw embeddings (pp)")
-    fig.text(0.01, 0.005, "Hollow square: value reported by the paper (its own baseline, backbone and statistics).\n"
+    fig.text(0.01, 0.005, "Hollow square: value reported by the paper (its own baseline, backbone, split and statistics; "
+                          "I0T uses the Flickr30k validation split, we use test).\n"
                           "Filled: our measurement, 95% paired-bootstrap CI (M1/M4: mean over 3 calibration seeds).",
              fontsize=7.5, color="0.3")
     fig.suptitle("Centering in the literature settings: reported vs. measured", fontsize=11)

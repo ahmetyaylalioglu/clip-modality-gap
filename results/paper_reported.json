@@ -1,5 +1,5 @@
 {
-  "_note": "Numbers reported by the papers, NOT measured by us. Transcribed from the arXiv HTML versions on 2026-11-11; each entry gives the exact source. Re-check against the PDF before citing.",
+  "_note": "Numbers reported by the papers, NOT measured by us. First transcribed from the arXiv HTML versions on 2026-11-11; I0T, GR-CLIP, Liu and Sato entries re-checked against the PDFs on 2026-11-13 (I0T and Sato: ACL Anthology versions; GR-CLIP: arXiv v1; Liu: arXiv v1). Each entry gives the exact source.",
   "mind_the_gap_table1": {
     "paper": "Liang et al., Mind the Gap, NeurIPS 2022, arXiv:2203.02053",
     "source": "Table 1 (Section 5.1). Values are the max over the shift grid on the test set (see official code shift_features.ipynb, plot_metrics).",
@@ -47,10 +47,10 @@
     "gap_modified": 0.97
   },
   "i0t_table2": {
-    "paper": "An et al., I0T, ACL 2025, arXiv:2412.14384",
+    "paper": "An et al., I0T: Embedding Standardization Method Towards Zero Modality Gap, ACL 2025 (Long Papers), pp. 27182-27199, doi:10.18653/v1/2025.acl-long.1319, arXiv:2412.14384",
     "source": "Table 2; protocol in Appendix D.2",
-    "dataset": "Flickr30k Karpathy 1k, first caption per image only",
-    "model": "CLIP ViT-B/32",
+    "dataset": "Flickr30k 1k, Karpathy VALIDATION split (Appendix D.2), first caption per image only",
+    "model": "ViT-B/32-based CLIP models",
     "metric": "R@1",
     "rows": [
       {
@@ -64,14 +64,53 @@
         "t2i_R@1": 76.3
       }
     ],
-    "statistics_source_note": "Limitations: method 'relies on the entire test dataset' -> likely test statistics; not stated explicitly."
+    "statistics_source_note": "Sec. 5.3 / Table 3 vary the number of 'test samples' used for the means; Sec. 5.3: 'I0T_post using the entire test sample, as we originally defined'; Limitations: 'relies on the entire test dataset'. The samples are from the evaluation split (Karpathy validation).",
+    "model_note": "I0T_post is applied to fine-tuned encoders, not to the original CLIP: Sec. 2/5.1 'on the frozen encoders from the first stage'; 'our final I0T_post is designed based on LCCOM' (Long-CyCLIP-only + MCSIE, fine-tuned on COCO). The 'CLIP' row appears to be the original pretrained model (our inference: its 5-caption I2T in Table 5, 78.5, is close to open_clip's 78.9 for ViT-B/32 on the Flickr30k test split). The Table 2 difference therefore combines fine-tuning and centering.",
+    "five_caption_rows_table5": [
+      {
+        "method": "CLIP",
+        "i2t_R@1": 78.5,
+        "t2i_R@1": 58.7
+      },
+      {
+        "method": "I0T_post",
+        "i2t_R@1": 80.0,
+        "t2i_R@1": 65.6
+      }
+    ]
+  },
+  "i0t_table9": {
+    "paper": "An et al., I0T: Embedding Standardization Method Towards Zero Modality Gap, ACL 2025 (Long Papers), pp. 27182-27199, doi:10.18653/v1/2025.acl-long.1319, arXiv:2412.14384",
+    "source": "Appendix, Table 9 and the text before it ('ResNet-based CLIP')",
+    "dataset": "same retrieval protocol as Table 2 (Flickr30k 1k, Karpathy validation, first caption)",
+    "model": "CLIP RN50 (original pretrained weights, no fine-tuning)",
+    "metric": "R@1",
+    "rows": [
+      {
+        "method": "CLIP",
+        "i2t_R@1": 71.3,
+        "t2i_R@1": 67.2
+      },
+      {
+        "method": "CLIP_post",
+        "i2t_R@1": 68.0,
+        "t2i_R@1": 70.3
+      }
+    ],
+    "text": "'Whereas the T2I score is 3.1 higher than that of CLIP, the I2T score is 3.3 lower than the CLIP I2T score.'"
+  },
+  "grclip": {
+    "paper": "Li et al., Closing the Modality Gap for Mixed Modality Search (method: GR-CLIP), NeurIPS 2025, arXiv:2507.19054 (v1 checked; marked 'Preprint. Under review.')",
+    "source": "Appendix B and Algorithm 1",
+    "scoring": "cosine similarity after mean subtraction (Algorithm 1, line 21: s = e_q . e_d / (||e_q|| ||e_d||)); for ranking this equals re-normalizing, i.e. our M1, not M2",
+    "means": "from ~10k samples of the TRAINING splits of several datasets (MSCOCO, Google WIT, NFCorpus, VisualNews, OVEN), 'to ensure generalization across datasets and prevent test-set leakage'; separate means for queries, text documents and images (and an OVEN-specific query mean)"
   },
   "liu2026_table4": {
-    "paper": "Liu et al. 2026, The Geometry of Compromise, arXiv:2604.00279 (preprint, not peer reviewed)",
+    "paper": "Liu et al. 2026, The Geometry of Compromise: Unlocking Generative Capabilities via Controllable Modality Alignment, arXiv:2604.00279v1 (31 Mar 2026; preprint, not peer reviewed)",
     "source": "Table 4 (also Table 1)",
     "dataset": "COCO 5K test",
     "model": null,
-    "model_note": "Not named in the retrieval tables; implementation section uses ViT-B/32.",
+    "model_note": "Not named in the retrieval table. Implementation details: 'We fine-tune the pre-trained ViT-B/32 ... on CC3M'; 'All fine-tuning and post-processing baselines use the same training data, number of epochs, and backbone'. The 'Original CLIP' row is labelled 'Pretrained' in Table 1. Whether Mean-Centering is applied to the pretrained or a fine-tuned model, and which data the centroids come from, is not stated (not found).",
     "metric": "R@1",
     "rows": [
       {
@@ -84,14 +123,38 @@
         "i2t_R@1": 43.74,
         "t2i_R@1": 34.44
       }
-    ]
+    ],
+    "zero_shot_table5": {
+      "source": "Table 5 (multi-dataset zero-shot classification)",
+      "rows": [
+        {
+          "method": "Orig. CLIP",
+          "ImageNet": 62.62,
+          "CIFAR-100": 69.8,
+          "Food-101": 79.5,
+          "Caltech": 85.9,
+          "Flowers": 67.2
+        },
+        {
+          "method": "Mean-Centering",
+          "ImageNet": 60.23,
+          "CIFAR-100": 67.6,
+          "Food-101": 78.5,
+          "Caltech": 83.9,
+          "Flowers": 62.0
+        }
+      ]
+    },
+    "distribution_gap_definition": "Sec. 3: 'the residual gap after centroid alignment, measured as the average cosine distance between centered embeddings' -> computed on centered vectors by definition."
   },
   "sato2026_appD3": {
-    "paper": "Sato et al. 2026, When Modality Gap Reduction Fails, arXiv:2609.01103 (EMNLP 2026)",
+    "paper": "Sato, Kiyama, Hirasawa, Komachi. When Modality Gap Reduction Fails: Prediction-Level Hubness in CLIP. EMNLP 2026 (main), pp. 23060-23083, Anthology ID 2026.emnlp-main.1002, arXiv:2609.01103",
     "source": "Appendix D.3 text",
-    "finding": "Centering at alpha=0 changes zero-shot accuracy from -4.2 pt (Flowers102) to +4.1 pt (EuroSAT) with dataset-specific templates.",
+    "finding": "Appendix D.3: centering's effect on the accuracy of the uncorrected model is 'dataset-dependent, from -4.2 points (Flowers102) to +4.1 points (EuroSAT) under the dataset-specific templates, and up to +15.3 points on EuroSAT under the generic template'.",
     "per_dataset_signed_change": null,
-    "per_dataset_note": "Only the extremes are given in the text."
+    "per_dataset_note": "Only the extremes are given in the text.",
+    "alpha_definition": "alpha is the strength of a linear (Mind-the-Gap-style) shift: x - alpha*g, t + alpha*g (Sec. 4); not a centering scale.",
+    "limitations": "'we do not claim that they carry over to cross-modal retrieval'; retrieval metrics 'would have to be reformulated—plausibly in terms of top-k occupancy across queries—which we have not done.'"
   },
   "openclip_retrieval_results": {
     "source": "open_clip repository, docs/openclip_retrieval_results.csv (main branch, read 2026-11-13; commit not pinned): https://github.com/mlfoundations/open_clip/blob/main/docs/openclip_retrieval_results.csv",

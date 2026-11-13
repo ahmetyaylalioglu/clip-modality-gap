@@ -15,8 +15,9 @@ lambda * ||Delta|| = 0.5 * delta.
 
 Centering (I0T_post, An et al. 2025; GR-CLIP, Li et al. 2025 — attributed):
     M1: x' = norm(x - mean_x_calib)     (with re-normalization)
-    M2: x' = x - mean_x_calib           (no re-normalization; cosine scoring
-                                          is then NOT used, raw dot product is)
+    M2: x' = x - mean_x_calib           (ablation, no re-normalization; cosine scoring
+                                          is then NOT used, raw dot product is.
+                                          GR-CLIP scores with cosine, so it corresponds to M1)
 """
 from __future__ import annotations
 

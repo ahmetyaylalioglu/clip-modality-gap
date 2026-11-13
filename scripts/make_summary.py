@@ -197,22 +197,25 @@ def literature():
     w()
     w("Source: `results/improvement/literature_comparison.csv` (ours) and `results/paper_reported.json` "
       "(reported by the papers, not measured by us). Figure: `results/figures/fig_literature_comparison.png`. "
-      "Reported rows use the papers' own baselines, backbones and statistics; ours use the setup of §2.1. "
+      "Reported rows use the papers' own baselines, backbones, splits and statistics; ours use the setup of §2.1. "
+      "I0T evaluates on the Flickr30k Karpathy validation split with means from the evaluated samples; its Table 2 "
+      "applies centering to fine-tuned encoders (compared with the original CLIP), its Table 9 to the frozen CLIP RN50. "
       "M1/M4: mean over 3 calibration seeds of the estimate and the per-seed 95% CI bounds. "
       "M1-T uses test statistics (diagnostic only).")
     w()
-    specs = [("I0T", "i0t_table2", "CLIP", "I0T_post", "Flickr30k 1k, first caption"),
-             ("Liu", "liu2026_table4", "Original CLIP", "Mean-Centering", "COCO 5k, 5 captions")]
+    import sys
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from c7_literature_comparison import REPORTED, SETTINGS as LSET
     for d, dname in DIRS.items():
         w(f"**{dname}** (R@1, %)")
         w()
         rows = []
-        for setting, key, base, corr, title in specs:
-            e = paper[key]
-            rr = {r["method"]: r for r in e["rows"]}
-            b, c = rr[base][f"{d}_R@1"], rr[corr][f"{d}_R@1"]
-            rows.append([title, f"reported: {setting} ({e['source'].split(';')[0].split(' (')[0]})", e["model"] or "not named",
-                         f"{b:.2f}", f"{c:.2f} ({corr})", f"{c - b:+.2f}", ""])
+        for setting, refs in REPORTED.items():
+            title = LSET[setting][2]
+            for key, base, corr, label in refs:
+                rr = {r["method"]: r for r in paper[key]["rows"]}
+                b, c = rr[base][f"{d}_R@1"], rr[corr][f"{d}_R@1"]
+                rows.append([title, f"reported: {label}", f"{b:.2f}", f"{c:.2f} ({corr})", f"{c - b:+.2f}", ""])
             for m in MODELS:
                 g = df[(df.model == m) & (df.setting == setting) & (df.direction == d)]
                 if not len(g):
@@ -223,9 +226,9 @@ def literature():
                     if not len(q):
                         continue
                     q = q.iloc[0]
-                    rows.append([title, f"ours: {meth}", NAMES[m], pct(m0), pct(q["R@1"]),
+                    rows.append([title, f"ours: {NAMES[m]}, {meth}", pct(m0), pct(q["R@1"]),
                                  ci(q["dR@1"], q["dR@1_lo"], q["dR@1_hi"], sign=True), excl0(q["dR@1_lo"], q["dR@1_hi"])])
-        table(["Setting", "Source", "Backbone", "Baseline", "Corrected", "Δ [95% CI] (pp)", "CI excludes 0"], rows)
+        table(["Setting", "Source", "Baseline", "Corrected", "Δ [95% CI] (pp)", "CI excludes 0"], rows)
 
 
 def zero_shot(m):
