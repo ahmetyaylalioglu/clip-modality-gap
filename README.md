@@ -117,6 +117,7 @@ Individual scripts (all take `--model`):
 | `c4_failure_cases.py` | 20 most improved / worsened queries |
 | `c5_figures.py` | figures for Phase C |
 | `c6_latency.py` | per-query correction latency (CPU/GPU) |
+| `c7_literature_comparison.py` | our M0/M1/M1-T/M4 in the I0T and Liu settings, next to their reported numbers (runs once for all models) |
 | `make_summary.py`, `dump_config.py` | `results/SUMMARY.md`, `configs/resolved_config.yaml` |
 
 ## Notes on the protocol

@@ -187,6 +187,47 @@ def retrieval(m):
               rows)
 
 
+def literature():
+    f = IMP / "literature_comparison.csv"
+    if not f.exists():
+        return
+    df = pd.read_csv(f)
+    paper = json.loads((ROOT / "results" / "paper_reported.json").read_text(encoding="utf-8"))
+    w("### 2.3 Literature settings: reported vs. measured")
+    w()
+    w("Source: `results/improvement/literature_comparison.csv` (ours) and `results/paper_reported.json` "
+      "(reported by the papers, not measured by us). Figure: `results/figures/fig_literature_comparison.png`. "
+      "Reported rows use the papers' own baselines, backbones and statistics; ours use the setup of §2.1. "
+      "M1/M4: mean over 3 calibration seeds of the estimate and the per-seed 95% CI bounds. "
+      "M1-T uses test statistics (diagnostic only).")
+    w()
+    specs = [("I0T", "i0t_table2", "CLIP", "I0T_post", "Flickr30k 1k, first caption"),
+             ("Liu", "liu2026_table4", "Original CLIP", "Mean-Centering", "COCO 5k, 5 captions")]
+    for d, dname in DIRS.items():
+        w(f"**{dname}** (R@1, %)")
+        w()
+        rows = []
+        for setting, key, base, corr, title in specs:
+            e = paper[key]
+            rr = {r["method"]: r for r in e["rows"]}
+            b, c = rr[base][f"{d}_R@1"], rr[corr][f"{d}_R@1"]
+            rows.append([title, f"reported: {setting} ({e['source'].split(';')[0].split(' (')[0]})", e["model"] or "not named",
+                         f"{b:.2f}", f"{c:.2f} ({corr})", f"{c - b:+.2f}", ""])
+            for m in MODELS:
+                g = df[(df.model == m) & (df.setting == setting) & (df.direction == d)]
+                if not len(g):
+                    continue
+                m0 = g[g.method == "M0"].iloc[0]["R@1"]
+                for meth in ["M1", "M1-T", "M4"]:
+                    q = g[g.method == meth]
+                    if not len(q):
+                        continue
+                    q = q.iloc[0]
+                    rows.append([title, f"ours: {meth}", NAMES[m], pct(m0), pct(q["R@1"]),
+                                 ci(q["dR@1"], q["dR@1_lo"], q["dR@1_hi"], sign=True), excl0(q["dR@1_lo"], q["dR@1_hi"])])
+        table(["Setting", "Source", "Backbone", "Baseline", "Corrected", "Δ [95% CI] (pp)", "CI excludes 0"], rows)
+
+
 def zero_shot(m):
     f = IMP / f"zero_shot_{m}.csv"
     if not f.exists():
@@ -386,6 +427,7 @@ def main():
     for m in models:
         retrieval(m)
         zero_shot(m)
+    literature()
     w("## 3. Controls and ablations")
     w()
     for m in models:

@@ -50,6 +50,9 @@ for m in "${MODELS[@]}"; do
   "$PY" scripts/c6_latency.py          --model "$m"   # uses the GPU briefly if available
 done
 
+echo "=== literature comparison (all models)"
+"$PY" scripts/c7_literature_comparison.py
+
 echo "=== summary and resolved configuration"
 "$PY" scripts/dump_config.py
 "$PY" scripts/make_summary.py
