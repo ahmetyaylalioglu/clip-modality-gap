@@ -1,0 +1,21 @@
+model,device,direction,operation,n_queries,median_us,p95_us,cpu,gpu,numpy,torch,git_commit
+clip_b16,cpu,t2i,M1 norm(q - mu),1000,2.7,4.5,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cpu,t2i,M2 q - mu,1000,0.7,0.8,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cpu,t2i,M3 norm(q +- 0.5*delta*u),1000,3.4,4.704999999999996,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cpu,t2i,M4 norm(q - alpha*mu),1000,4.0,4.5,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cpu,t2i,(context) score vs gallery of 5000,1000,134.14999999999998,236.41,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cpu,i2t,M1 norm(q - mu),1000,3.2,4.7,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cpu,i2t,M2 q - mu,1000,0.7,1.0,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cpu,i2t,M3 norm(q +- 0.5*delta*u),1000,4.0,4.2,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cpu,i2t,M4 norm(q - alpha*mu),1000,4.0,4.3,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cpu,i2t,(context) score vs gallery of 25010,1000,774.7,1015.155,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cuda,t2i,M1 norm(q - mu),1000,45.7,107.8,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cuda,t2i,M2 q - mu,1000,12.8,26.4,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cuda,t2i,M3 norm(q +- 0.5*delta*u),1000,63.1,79.53499999999997,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cuda,t2i,M4 norm(q - alpha*mu),1000,62.4,78.7,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cuda,t2i,(context) score vs gallery of 5000,1000,38.7,42.7,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cuda,i2t,M1 norm(q - mu),1000,43.7,60.5,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cuda,i2t,M2 q - mu,1000,12.7,26.4,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cuda,i2t,M3 norm(q +- 0.5*delta*u),1000,59.8,67.5,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cuda,i2t,M4 norm(q - alpha*mu),1000,60.8,68.2,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc
+clip_b16,cuda,i2t,(context) score vs gallery of 25010,1000,124.9,135.4,"Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",NVIDIA GeForce RTX 3080 Ti Laptop GPU,2.2.6,2.6.0+cu124,812c274205bac948225b97a26429cd86b78110fc

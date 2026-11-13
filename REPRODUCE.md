@@ -125,15 +125,18 @@ python scripts/download_data.py          # ~8 GB
 python scripts/smoke_test.py             # < 1 min after weights are cached
 ```
 
-Smoke test output (2026-11-11, `env-main`, 32 Flickr30k test images / 160 captions;
-**CLIP rows made with the plain GELU config, see §7 #2 — to be re-run**):
+Smoke test output (2026-11-13, `env-main`, QuickGELU configs for CLIP,
+32 Flickr30k test images / 160 captions):
 
 ```
-clip_b16     I2T R@1=0.969  T2I R@1=0.856  ||gap||=0.873
-clip_b32     I2T R@1=0.969  T2I R@1=0.919  ||gap||=0.885
+clip_b16     I2T R@1=1.000  T2I R@1=0.906  ||gap||=0.822
+clip_b32     I2T R@1=0.969  T2I R@1=0.894  ||gap||=0.815
 siglip_b16   I2T R@1=0.938  T2I R@1=0.931  ||gap||=1.021
-total 38.8s
+total 57.7s
 ```
+
+(A first run on 2026-11-11 used the plain GELU configs for CLIP, see §7 #2;
+SigLIP is unaffected and gives identical numbers.)
 
 ## 7. Deviations from the original setup
 
@@ -157,6 +160,7 @@ python scripts/c3_hypothesis_tests.py --model clip_b16  # paired tests for H3/H6
 python scripts/b3_gap_plot.py --model clip_b16        # B3 PCA/UMAP figure + gap stats (CPU, ~30 s)
 python scripts/c4_failure_cases.py --model clip_b16   # 20 most improved / worsened queries (CPU, ~10 s)
 python scripts/c5_figures.py --model clip_b16         # Phase C figures (CPU, ~20 s)
+python scripts/c6_latency.py --model clip_b16         # per-query correction latency, CPU + GPU (~10 s)
 # python scripts/c3_hypothesis_tests.py --model clip_b16 --spearman-only   # only the H4 Spearman tables
 ```
 
