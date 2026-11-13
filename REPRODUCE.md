@@ -145,3 +145,27 @@ total 38.8s
 | 4 | Original code run through `scripts/run_original_table1.py`, which executes notebook cell 0 verbatim with run-time adaptations A1–A5 (listed in the script docstring): `~/.cache` → `data/torchvision`; stub for the missing `vonmiseskde` module (plots only); EuroSAT class names from CLIP `data/prompts.md` because `mapping.json` is not in the repository; COCO base dir; Agg backend. No third-party file is edited. | A3 is an assumption: if the authors used other EuroSAT class names, EuroSAT accuracy can differ |
 | 5 | CIFAR10/100 have no cell in the notebook; the gap direction used for them in Table 1 is unknown. Both the test-feature direction and the COCO val2017 direction are run and labeled. | Which variant matches the paper is reported, not assumed |
 | 6 | EuroSAT: the original code evaluates on the whole dataset (27,000 images, no split). B1/B2 do the same; B2b uses a seeded 80/20 split. | B2b EuroSAT numbers are on a 20% test subset |
+
+## 8. Phase B/C commands (clip_b16)
+
+```bash
+python -m src.embed --model clip_b16                  # all caches (GPU)
+python scripts/b2_shift_zero_shot.py --model clip_b16 # B2 / B2b (CPU, ~5 min)
+python scripts/c1_retrieval.py --model clip_b16       # Phase C retrieval (CPU, ~9 min)
+python scripts/c2_zero_shot.py --model clip_b16       # Phase C zero-shot (CPU, ~2 min)
+python scripts/c3_hypothesis_tests.py --model clip_b16  # paired tests for H3/H6, H4 Spearman
+```
+
+**Thermal throttling on the development laptop.** Under sustained load the
+GPU reached 92–98 °C. `src/embed.py` therefore supports two environment
+variables that only add pauses (they do not change any embedding):
+`EMBED_MAX_TEMP` (pause after a batch while the GPU is at/above this
+temperature until it is 3 °C lower; 85 was used for `flickr30k_train`) and
+`EMBED_SLEEP` (fixed pause per batch). The pause setting is stored in each
+`*_meta.json` (`resources.embed_sleep_s_per_batch`). Wall-clock times of
+caches produced under throttling or concurrent jobs are **not** used for the
+resource table; a separate clean benchmark is used instead.
+
+B2 sanity check (QuickGELU configs): δ=0 and test-selected max are identical
+to the original code for CIFAR10 (.9013/.9081 test direction, .9126 COCO
+direction), CIFAR100 (.6658/.6737), EuroSAT (.5494/.5685) and SVHN (.5389).

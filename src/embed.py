@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -59,6 +60,30 @@ CLASSIF_SETS = [
 ]
 
 
+def _gpu_temp():
+    import subprocess
+    try:
+        r = subprocess.run(["nvidia-smi", "--query-gpu=temperature.gpu", "--format=csv,noheader,nounits"],
+                           capture_output=True, text=True, timeout=10)
+        return int(r.stdout.strip().splitlines()[0])
+    except Exception:
+        return None
+
+
+def _thermal_wait():
+    """If EMBED_MAX_TEMP is set and the GPU is at/above it, pause until it is
+    3 C below. Only affects wall-clock time, not the embeddings."""
+    limit = os.environ.get("EMBED_MAX_TEMP")
+    if not limit:
+        return
+    t = _gpu_temp()
+    if t is None or t < int(limit):
+        return
+    while t is not None and t > int(limit) - 3:
+        time.sleep(5)
+        t = _gpu_temp()
+
+
 class Encoder:
     def __init__(self, key: str, device: str = "cuda", batch_size: int = 256):
         self.key, self.device, self.bs = key, device, batch_size
@@ -85,7 +110,12 @@ class Encoder:
         x = torch.stack(list(self.pool.map(self.preprocess, batch))).to(self.device)
         with torch.autocast("cuda", enabled=False):
             f = self.model.encode_image(x).float()
-        return (f / f.norm(dim=-1, keepdim=True)).cpu().numpy()
+        out = (f / f.norm(dim=-1, keepdim=True)).cpu().numpy()
+        # optional pause per batch to limit GPU temperature on laptops;
+        # it only changes wall-clock time, not the embeddings
+        time.sleep(float(os.environ.get("EMBED_SLEEP", "0")))
+        _thermal_wait()
+        return out
 
     @torch.no_grad()
     def texts(self, texts):
@@ -94,6 +124,7 @@ class Encoder:
             t = self.tokenizer(texts[i:i + self.bs]).to(self.device)
             f = self.model.encode_text(t).float()
             out.append((f / f.norm(dim=-1, keepdim=True)).cpu().numpy())
+            _thermal_wait()
         return np.concatenate(out)
 
 
@@ -115,8 +146,22 @@ def embed_retrieval(enc: Encoder, name: str):
             owner.extend([i] * len(s.captions))
             yield s.image
 
-    img = enc.images(gen())
+    # image embeddings are kept in a partial file so that an interrupted run
+    # (e.g. thermal stop during the text pass) does not redo the image pass
+    part = CACHE / enc.key / f"{name}_partial"
+    if (part.with_suffix(".npy")).exists() and (part.with_suffix(".json")).exists():
+        img = np.load(part.with_suffix(".npy"))
+        pm = json.loads(part.with_suffix(".json").read_text())
+        keys, captions, owner = pm["keys"], pm["captions"], pm["txt_to_img"]
+        print(f"  resumed image pass from {part.name}")
+    else:
+        img = enc.images(gen())
+        part.parent.mkdir(parents=True, exist_ok=True)
+        np.save(part.with_suffix(".npy"), img)
+        part.with_suffix(".json").write_text(json.dumps({"keys": keys, "captions": captions, "txt_to_img": owner}))
     txt = enc.texts(captions)
+    for suf in (".npy", ".json"):
+        part.with_suffix(suf).unlink(missing_ok=True)
     return img, txt, {"keys": keys, "captions": captions, "txt_to_img": owner}
 
 
@@ -214,6 +259,7 @@ def main():
             "peak_gpu_mem_mb": torch.cuda.max_memory_allocated() / 2**20,
             "n_images": int(img.shape[0]), "n_texts": int(txt.shape[0]),
             "batch_size": enc.bs, "gpu": torch.cuda.get_device_name(0),
+            "embed_sleep_s_per_batch": float(os.environ.get("EMBED_SLEEP", "0")),
         }
         meta["model"] = {"key": args.model, "arch_tag": models.MODELS[args.model]}
         _save(dirp, name, img, txt, meta)

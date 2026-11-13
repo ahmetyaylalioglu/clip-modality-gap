@@ -50,6 +50,30 @@ def recall_at_k(
     return out
 
 
+def retrieval_ranks(img: np.ndarray, txt: np.ndarray, txt_to_img: np.ndarray, score_fn=None):
+    """0-based ranks under the same protocol as recall_at_k, computed by
+    counting strictly higher scores (no full sort; ties count in favor of
+    the correct item). Returns (i2t_rank (N_img,), t2i_rank (N_txt,), sim).
+    `score_fn(img, txt)` defaults to the dot product."""
+    sim = img @ txt.T if score_fn is None else score_fn(img, txt)
+    sim = sim.astype(np.float32, copy=False)
+    own = sim[txt_to_img, np.arange(len(txt_to_img))]          # score of each caption with its image
+    best = np.full(img.shape[0], -np.inf, dtype=np.float32)
+    np.maximum.at(best, txt_to_img, own)                         # best correct caption per image
+    i2t = (sim > best[:, None]).sum(1)
+    t2i = (sim > own[None, :]).sum(0)
+    return i2t, t2i, sim
+
+
+def topk_occupancy(sim: np.ndarray, ks=(1, 5, 10)) -> dict:
+    """Gallery occupancy counts for each k (rows = queries, cols = gallery)."""
+    kmax = max(ks)
+    part = np.argpartition(-sim, kth=kmax - 1, axis=1)[:, :kmax]
+    order = np.take_along_axis(sim, part, 1).argsort(1)[:, ::-1]
+    top = np.take_along_axis(part, order, 1)
+    return {k: np.bincount(top[:, :k].ravel(), minlength=sim.shape[1]) for k in ks}
+
+
 def zero_shot_accuracy(img: np.ndarray, cls_txt: np.ndarray, labels: np.ndarray, return_preds=False):
     preds = (img @ cls_txt.T).argmax(axis=1)
     acc = float((preds == labels).mean())

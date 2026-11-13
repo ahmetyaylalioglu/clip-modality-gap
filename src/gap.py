@@ -68,6 +68,14 @@ def center(img: np.ndarray, txt: np.ndarray, mu_img: np.ndarray, mu_txt: np.ndar
     return (l2n(a), l2n(b)) if renorm else (a, b)
 
 
+def partial_center(x: np.ndarray, mu: np.ndarray, alpha: float) -> np.ndarray:
+    """M4 building block: norm(x - alpha * mu). alpha=0 -> M0, alpha=1 -> M1."""
+    return l2n(x - alpha * mu)
+
+
+ALPHA_GRID = np.round(np.arange(0, 1.0001, 0.1), 1)  # fixed in HYPOTHESES.md
+
+
 def random_direction_like(delta_vec: np.ndarray, seed: int) -> np.ndarray:
     """Control C1: random direction with the same norm as Delta."""
     rng = np.random.default_rng(seed)
