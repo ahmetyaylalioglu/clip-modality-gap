@@ -154,6 +154,8 @@ python scripts/b2_shift_zero_shot.py --model clip_b16 # B2 / B2b (CPU, ~5 min)
 python scripts/c1_retrieval.py --model clip_b16       # Phase C retrieval (CPU, ~9 min)
 python scripts/c2_zero_shot.py --model clip_b16       # Phase C zero-shot (CPU, ~2 min)
 python scripts/c3_hypothesis_tests.py --model clip_b16  # paired tests for H3/H6, H4 Spearman
+python scripts/b3_gap_plot.py --model clip_b16        # B3 PCA/UMAP figure + gap stats (CPU, ~30 s)
+python scripts/c4_failure_cases.py --model clip_b16   # 20 most improved / worsened queries (CPU, ~10 s)
 ```
 
 **Thermal throttling on the development laptop.** Under sustained load the

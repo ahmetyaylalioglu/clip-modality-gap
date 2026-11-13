@@ -1,0 +1,9 @@
+model,dataset,method,direction,param,n_queries,improved,worsened,unchanged,top1_gained,top1_lost,median_rank_change,git_commit
+clip_b16,flickr30k,M1,i2t,,1000,102,150,748,58,93,0.0,401d3427f241b4d5ffccfddfc47afca1bf1f7572
+clip_b16,flickr30k,M1,t2i,,5000,939,881,3180,344,321,0.0,401d3427f241b4d5ffccfddfc47afca1bf1f7572
+clip_b16,flickr30k,M4,i2t,0.3,1000,70,61,869,27,20,0.0,401d3427f241b4d5ffccfddfc47afca1bf1f7572
+clip_b16,flickr30k,M4,t2i,0.4,5000,802,483,3715,184,95,0.0,401d3427f241b4d5ffccfddfc47afca1bf1f7572
+clip_b16,mscoco,M1,i2t,,5000,1178,1541,2281,351,598,0.0,401d3427f241b4d5ffccfddfc47afca1bf1f7572
+clip_b16,mscoco,M1,t2i,,25010,8499,7921,8590,1671,1508,0.0,401d3427f241b4d5ffccfddfc47afca1bf1f7572
+clip_b16,mscoco,M4,i2t,0.2,5000,940,714,3346,123,119,0.0,401d3427f241b4d5ffccfddfc47afca1bf1f7572
+clip_b16,mscoco,M4,t2i,0.5,25010,8512,5647,10851,1115,617,0.0,401d3427f241b4d5ffccfddfc47afca1bf1f7572
