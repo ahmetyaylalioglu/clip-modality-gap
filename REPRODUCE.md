@@ -7,6 +7,9 @@ traceable to an entry here (commit, environment, data revision, command).
 
 | Item | Value |
 |------|-------|
+| Machine | Dell Precision 7770 (laptop) |
+| CPU | Intel Core i9-12950HX (16 cores / 24 threads) |
+| RAM | 64 GB |
 | GPU | NVIDIA GeForce RTX 3080 Ti Laptop GPU, 16 GB |
 | Driver / CUDA (driver) | 596.71 / 13.2 |
 | OS | Windows 11 Pro 10.0.26300 |
